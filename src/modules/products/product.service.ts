@@ -9,10 +9,11 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Query } from 'mongoose';
-import { Product, ProductDocument } from './product.schema';
 import { Category, CategoryDocument } from '../category/category.schema';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { Product, ProductDocument } from './product.schema';
+import * as fs from 'fs/promises';
 
 @Injectable()
 export class ProductService {
@@ -279,7 +280,7 @@ export class ProductService {
       .findById(createProductDto.category)
       .exec();
     if (!category) {
-      throw new NotFoundException(MESSAGES[MessageKeys.NOT_FOUND]);
+      throw new NotFoundException('Kategoriya topilmadi');
     }
 
     const productData = {
@@ -300,6 +301,7 @@ export class ProductService {
     updateProductDto: UpdateProductDto,
     imagePath?: string,
   ): Promise<CustomApiResponse<ProductDocument>> {
+    // Mavjud mahsulotni olish
     const product = await this.productModel.findById(id).exec();
     if (!product) {
       throw new NotFoundException(MESSAGES[MessageKeys.NOT_FOUND]);
@@ -311,20 +313,28 @@ export class ProductService {
         .findById(updateProductDto.category)
         .exec();
       if (!category) {
-        throw new NotFoundException(MESSAGES[MessageKeys.NOT_FOUND]);
+        throw new NotFoundException('Kategoriya topilmadi');
       }
     }
 
     // Agar isDiscounted false bo‘lsa, discountPrice’ni undefined qilamiz
     if (updateProductDto.isDiscounted === false) {
-      updateProductDto.discountPrice = undefined; // null o‘rniga undefined
+      updateProductDto.discountPrice = undefined;
     }
 
-    // Agar yangi rasm yuklansa, imagePath’ni yangilaymiz
-    if (imagePath) {
-      updateProductDto.imagePath = imagePath;
+    // Agar yangi rasm yuklansa, eski rasmni o‘chirish
+    if (imagePath && product.imagePath) {
+      try {
+        await fs.unlink(product.imagePath);
+        console.log(`Eski rasm o‘chirildi: ${product.imagePath}`);
+      } catch (err) {
+        console.error(`Eski rasmni o‘chirishda xato: ${err}`);
+        // Xatolikni log qilamiz, lekin jarayonni to‘xtatmaymiz
+      }
+      updateProductDto.imagePath = imagePath; // Yangi rasm yo‘lini qo‘shish
     }
 
+    // Mahsulotni yangilash
     const updatedProduct = await this.productModel
       .findByIdAndUpdate(id, updateProductDto, { new: true })
       .populate('category')
@@ -339,6 +349,24 @@ export class ProductService {
 
   // 🔹 Mahsulotni o'chirish
   async delete(id: string): Promise<CustomApiResponse<ProductDocument>> {
+    // Mavjud mahsulotni olish
+    const product = await this.productModel.findById(id).exec();
+    if (!product) {
+      throw new NotFoundException(MESSAGES[MessageKeys.NOT_FOUND]);
+    }
+
+    // Agar rasm mavjud bo‘lsa, uni fayl tizimidan o‘chirish
+    if (product.imagePath) {
+      try {
+        await fs.unlink(product.imagePath);
+        console.log(`Rasm o‘chirildi: ${product.imagePath}`);
+      } catch (err) {
+        console.error(`Rasmni o‘chirishda xato: ${err}`);
+        // Xatolikni log qilamiz, lekin jarayonni to‘xtatmaymiz
+      }
+    }
+
+    // Mahsulotni bazadan o‘chirish
     const deletedProduct = await this.productModel.findByIdAndDelete(id).exec();
     if (!deletedProduct) {
       throw new NotFoundException(MESSAGES[MessageKeys.NOT_FOUND]);

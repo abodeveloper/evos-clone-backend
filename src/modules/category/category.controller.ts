@@ -15,10 +15,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { CategoryDocument as ResourceDocument } from './category.schema';
 import { CategoryService as ResourceService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -136,8 +133,8 @@ export class CategoryController {
   }
 
   // Create
-  @UseGuards(AuthGuard, RoleGuard)
-  @Roles(Role.ADMIN)
+  // @UseGuards(AuthGuard, RoleGuard)
+  // @Roles(Role.ADMIN)
   @Post()
   async create(
     @Body() createResourceDto: CreateCategoryDto,

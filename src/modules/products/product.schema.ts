@@ -14,7 +14,7 @@ export class Product {
   @Prop({ required: true, trim: true })
   imagePath: string;
 
-  @Prop({ required: true, min: 0 })
+  @Prop({ required: true })
   price: number;
 
   @Prop({ required: true, default: false })

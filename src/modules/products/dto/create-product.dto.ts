@@ -1,17 +1,18 @@
-import {
-  IsString,
-  IsNotEmpty,
-  IsOptional,
-  ValidateIf,
-  IsNumber,
-} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+  ValidateIf,
+} from 'class-validator';
 
 export class CreateProductDto {
   @ApiProperty({ description: 'Mahsulot nomi', example: 'Smartfon' })
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Mahsulot nomi majburiy' })
   name: string;
 
   @ApiProperty({
@@ -19,34 +20,18 @@ export class CreateProductDto {
     example: 'Bu yangi smartfon modeli',
   })
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Mahsulot tavsifi majburiy' })
   description: string;
 
   @ApiProperty({ description: 'Mahsulot narxi', example: 500 })
-  @Transform(({ value }) => {
-    const num = Number(value);
-    if (isNaN(num) || num < 0) {
-      throw new Error('price must be a number greater than or equal to 0');
-    }
-    return num;
-  })
-  @IsNumber()
-  @IsNotEmpty()
+  @IsNumber({}, { message: 'Narx raqam bo‘lishi kerak' })
+  @Min(0, { message: 'Narx 0 dan kichik bo‘lmasligi kerak' })
+  @IsNotEmpty({ message: 'Narx majburiy' })
   price: number;
 
   @ApiProperty({ description: 'Skidka bor yoki yo‘qligi', example: false })
-  @Transform(({ value }) => {
-    if (value === undefined || value === null || value === '') {
-      throw new Error(
-        'isDiscounted is required and must be a boolean value ("true" or "false")',
-      );
-    }
-    const normalizedValue = String(value).toLowerCase();
-    if (normalizedValue === 'true') return true;
-    if (normalizedValue === 'false') return false;
-    throw new Error('isDiscounted must be a boolean value ("true" or "false")');
-  })
-  @IsNotEmpty()
+  @IsBoolean({ message: 'Skidka holati "true" yoki "false" bo‘lishi kerak' })
+  @IsNotEmpty({ message: 'Skidka holati majburiy' })
   isDiscounted: boolean;
 
   @ApiProperty({
@@ -54,19 +39,12 @@ export class CreateProductDto {
     example: 400,
     required: false,
   })
-  @ValidateIf((o) => o.isDiscounted === true)
-  @Transform(({ value }) => {
-    if (!value) return undefined;
-    const num = Number(value);
-    if (isNaN(num) || num < 0) {
-      throw new Error(
-        'discountPrice must be a number greater than or equal to 0',
-      );
-    }
-    return num;
-  })
-  @IsNumber()
   @IsOptional()
+  @IsNumber({}, { message: 'Skidka narxi raqam bo‘lishi kerak' })
+  @Min(0, { message: 'Skidka narxi 0 dan kichik bo‘lmasligi kerak' })
+  @ValidateIf((o) => o.isDiscounted === true, {
+    message: 'Skidka bo‘lganda skidka narxi majburiy',
+  })
   discountPrice?: number;
 
   @ApiProperty({
@@ -74,6 +52,6 @@ export class CreateProductDto {
     example: '60d5f484f1b2c123456789ab',
   })
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Kategoriya majburiy' })
   category: string;
 }

@@ -1,40 +1,43 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Param,
-  Body,
-  UseGuards,
-  UseInterceptors,
-  UploadedFile,
-  Query,
-  BadRequestException,
-} from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiConsumes,
-  ApiBody,
-} from '@nestjs/swagger';
-import { ProductService } from './product.service';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
-import { ProductDocument } from './product.schema';
-import { CustomApiResponse } from '@/common/interfaces/api-response.interface';
-import { PaginationResponse } from '@/common/interfaces/pagination-response.interface';
 import { multerConfig } from '@/common/config/multer.config';
 import { ApiCommonPaginationQueries } from '@/common/decorators/common-pagination-queries.decorator';
 import { ApiFilterQueries } from '@/common/decorators/filter-queries.decorator';
 import { ApiGetAllQueries } from '@/common/decorators/get-all-queries.decorator';
-import { Roles } from '@/guards/decorators/roles.decorator';
+import { MulterExceptionFilter } from '@/common/decorators/multer-exception.filter';
+import { CustomApiResponse } from '@/common/interfaces/api-response.interface';
+import { PaginationResponse } from '@/common/interfaces/pagination-response.interface';
 import { Role } from '@/enums/role.enum';
 import { AuthGuard } from '@/guards/auth.guard';
+import { Roles } from '@/guards/decorators/roles.decorator';
 import { RoleGuard } from '@/guards/role.guard';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+  UploadedFile,
+  UseFilters,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
+import { ProductDocument } from './product.schema';
+import { ProductService } from './product.service';
 
 @ApiTags('Products')
 @Controller('products')
@@ -82,14 +85,19 @@ export class ProductController {
     description: 'Forbidden - Faqat ADMIN ruxsatiga ega foydalanuvchilar uchun',
   })
   @UseInterceptors(FileInterceptor('file', multerConfig))
+  @UseFilters(MulterExceptionFilter)
   async create(
     @Body() createProductDto: CreateProductDto,
     @UploadedFile() file: Express.Multer.File,
   ): Promise<CustomApiResponse<ProductDocument>> {
+    // Agar fayl yuklanmagan bo'lsa, xato chiqaramiz
     if (!file) {
       throw new BadRequestException('Rasm fayli majburiy!');
     }
+
     const imagePath = file.path;
+
+    // Agar hammasi yaxshi bo'lsa, mahsulotni yaratamiz
     return this.productService.create(createProductDto, imagePath);
   }
 
@@ -101,28 +109,23 @@ export class ProductController {
   @Get()
   @ApiGetAllQueries('Barcha mahsulotlarni olish')
   @ApiFilterQueries([
-    { name: 'name', description: 'Mahsulot nomi bo‘yicha filtr qilish' },
+    { name: 'name' },
     {
       name: 'description',
-      description: 'Mahsulot tavsifi bo‘yicha filtr qilish',
     },
-    { name: 'category', description: 'Kategoriya ID’si bo‘yicha filtr qilish' },
-    { name: 'price', description: 'Narx bo‘yicha filtr qilish' },
+    { name: 'category' },
+    { name: 'price' },
     {
       name: 'isDiscounted',
-      description: 'Skidka bor yoki yo‘qligi bo‘yicha filtr qilish',
     },
     {
       name: 'discountPrice',
-      description: 'Skidka narxi bo‘yicha filtr qilish',
     },
     {
       name: 'createdAt',
-      description: 'Yaratilgan vaqti bo‘yicha filtr qilish',
     },
     {
       name: 'updatedAt',
-      description: 'Yangilangan vaqti bo‘yicha filtr qilish',
     },
   ])
   @ApiResponse({
@@ -172,28 +175,23 @@ export class ProductController {
   @ApiBearerAuth()
   @ApiCommonPaginationQueries()
   @ApiFilterQueries([
-    { name: 'name', description: 'Mahsulot nomi bo‘yicha filtr qilish' },
+    { name: 'name' },
     {
       name: 'description',
-      description: 'Mahsulot tavsifi bo‘yicha filtr qilish',
     },
-    { name: 'category', description: 'Kategoriya ID’si bo‘yicha filtr qilish' },
-    { name: 'price', description: 'Narx bo‘yicha filtr qilish' },
+    { name: 'category' },
+    { name: 'price' },
     {
       name: 'isDiscounted',
-      description: 'Skidka bor yoki yo‘qligi bo‘yicha filtr qilish',
     },
     {
       name: 'discountPrice',
-      description: 'Skidka narxi bo‘yicha filtr qilish',
     },
     {
       name: 'createdAt',
-      description: 'Yaratilgan vaqti bo‘yicha filtr qilish',
     },
     {
       name: 'updatedAt',
-      description: 'Yangilangan vaqti bo‘yicha filtr qilish',
     },
   ])
   @ApiResponse({
@@ -269,7 +267,7 @@ export class ProductController {
    */
   @UseGuards(AuthGuard, RoleGuard)
   @Roles(Role.ADMIN)
-  @Put(':id')
+  @Patch(':id')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Mahsulotni yangilash (ADMIN uchun)' })
   @ApiConsumes('multipart/form-data')
@@ -311,6 +309,7 @@ export class ProductController {
   })
   @ApiResponse({ status: 404, description: 'Mahsulot topilmadi' })
   @UseInterceptors(FileInterceptor('file', multerConfig))
+  @UseFilters(MulterExceptionFilter)
   async update(
     @Param('id') id: string,
     @Body() updateProductDto: UpdateProductDto,
