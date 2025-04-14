@@ -40,6 +40,13 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document, {
     swaggerOptions: {
       persistAuthorization: true, // Tokenni saqlab qolish uchun
+
+      ignoreGlobalPrefix: false,
+      deepScanRoutes: true,
+      tryItOutEnabled: true,
+      displayRequestDuration: true,
+      defaultModelsExpandDepth: 0,
+      defaultModelExpandDepth: 0,
     },
   });
 

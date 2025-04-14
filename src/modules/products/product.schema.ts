@@ -20,17 +20,26 @@ export class Product {
   @Prop({ required: true, default: false })
   isDiscounted: boolean;
 
-  @Prop({ min: 0 }) // required sharti olib tashlandi, default null olib tashlandi
+  @Prop({
+    type: Number, // Faqat number turi
+    min: 0,
+    validate: {
+      validator: function (value: number | undefined) {
+        return value === undefined || typeof value === 'number';
+      },
+      message: 'Skidka narxi faqat raqam bo‘lishi mumkin (null emas)',
+    },
+  })
   discountPrice?: number; // Faqat number turi, null emas
 
   @Prop({ type: Types.ObjectId, ref: 'Category', required: true })
   category: Types.ObjectId;
 
-  @Prop({ default: Date.now })
-  createdAt: Date;
+  // @Prop({ default: Date.now })
+  // createdAt: Date;
 
-  @Prop({ default: Date.now })
-  updatedAt: Date;
+  // @Prop({ default: Date.now })
+  // updatedAt: Date;
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);

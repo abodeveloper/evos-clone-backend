@@ -18,12 +18,11 @@ import {
   Param,
   Patch,
   Post,
-  Put,
   Query,
   UploadedFile,
   UseFilters,
   UseGuards,
-  UseInterceptors,
+  UseInterceptors
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -57,19 +56,26 @@ export class ProductController {
   @ApiOperation({ summary: 'Yangi mahsulot yaratish (ADMIN uchun)' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
-    description: 'Mahsulot maʼlumotlari va rasm fayli',
     type: 'multipart/form-data',
     schema: {
       type: 'object',
       properties: {
-        name: { type: 'string', example: 'Smartfon' },
-        description: { type: 'string', example: 'Bu yangi smartfon modeli' },
-        price: { type: 'number', example: 500 },
+        name: { type: 'string', example: 'Lavash' },
+        description: { type: 'string', example: 'Bu yangi mahsulot' },
+        price: { type: 'number', example: 37000 },
         isDiscounted: { type: 'boolean', example: false },
-        discountPrice: { type: 'number', example: 400, nullable: true },
+        discountPrice: { type: 'number', example: 34000, nullable: true },
         category: { type: 'string', example: '60d5f484f1b2c123456789ab' },
         file: { type: 'string', format: 'binary' },
       },
+      required: [
+        'name',
+        'description',
+        'price',
+        'isDiscounted',
+        'category',
+        'file',
+      ],
     },
   })
   @ApiResponse({

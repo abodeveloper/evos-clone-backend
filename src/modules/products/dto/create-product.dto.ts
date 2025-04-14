@@ -10,38 +10,38 @@ import {
 } from 'class-validator';
 
 export class CreateProductDto {
-  @ApiProperty({ description: 'Mahsulot nomi', example: 'Smartfon' })
+  @ApiProperty({ description: 'Mahsulot nomi' })
   @IsString()
-  @IsNotEmpty({ message: 'Mahsulot nomi majburiy' })
+  @IsNotEmpty()
   name: string;
 
   @ApiProperty({
     description: 'Mahsulot tavsifi',
-    example: 'Bu yangi smartfon modeli',
+    example: 'Bu yangi mahsulot',
   })
   @IsString()
-  @IsNotEmpty({ message: 'Mahsulot tavsifi majburiy' })
+  @IsNotEmpty()
   description: string;
 
-  @ApiProperty({ description: 'Mahsulot narxi', example: 500 })
-  @IsNumber({}, { message: 'Narx raqam bo‘lishi kerak' })
-  @Min(0, { message: 'Narx 0 dan kichik bo‘lmasligi kerak' })
-  @IsNotEmpty({ message: 'Narx majburiy' })
+  @ApiProperty({ description: 'Mahsulot narxi' })
+  @IsNumber()
+  @Min(0)
+  @IsNotEmpty()
   price: number;
 
   @ApiProperty({ description: 'Skidka bor yoki yo‘qligi', example: false })
-  @IsBoolean({ message: 'Skidka holati "true" yoki "false" bo‘lishi kerak' })
-  @IsNotEmpty({ message: 'Skidka holati majburiy' })
+  @IsBoolean()
+  @IsNotEmpty()
   isDiscounted: boolean;
 
   @ApiProperty({
     description: 'Skidka narxi (agar skidka bo‘lsa)',
-    example: 400,
+    example: 34000,
     required: false,
   })
   @IsOptional()
-  @IsNumber({}, { message: 'Skidka narxi raqam bo‘lishi kerak' })
-  @Min(0, { message: 'Skidka narxi 0 dan kichik bo‘lmasligi kerak' })
+  @IsNumber()
+  @Min(0)
   @ValidateIf((o) => o.isDiscounted === true, {
     message: 'Skidka bo‘lganda skidka narxi majburiy',
   })
@@ -49,9 +49,8 @@ export class CreateProductDto {
 
   @ApiProperty({
     description: 'Mahsulot kategoriyasi ID’si',
-    example: '60d5f484f1b2c123456789ab',
   })
   @IsString()
-  @IsNotEmpty({ message: 'Kategoriya majburiy' })
+  @IsNotEmpty()
   category: string;
 }

@@ -14,7 +14,7 @@ export class UpdateProductDto {
     example: 'Smartfon',
     required: false,
   })
-  @IsString({ message: 'Mahsulot nomi string bo‘lishi kerak' })
+  @IsString()
   @IsOptional()
   name?: string;
 
@@ -23,13 +23,13 @@ export class UpdateProductDto {
     example: 'Bu yangi smartfon modeli',
     required: false,
   })
-  @IsString({ message: 'Mahsulot tavsifi string bo‘lishi kerak' })
+  @IsString()
   @IsOptional()
   description?: string;
 
   @ApiProperty({ description: 'Mahsulot narxi', example: 500, required: false })
-  @IsNumber({}, { message: 'Narx raqam bo‘lishi kerak' })
-  @Min(0, { message: 'Narx 0 dan kichik bo‘lmasligi kerak' })
+  @IsNumber()
+  @Min(0)
   @IsOptional()
   price?: number;
 
@@ -38,7 +38,7 @@ export class UpdateProductDto {
     example: false,
     required: false,
   })
-  @IsBoolean({ message: 'Skidka holati "true" yoki "false" bo‘lishi kerak' })
+  @IsBoolean()
   @IsOptional()
   isDiscounted?: boolean;
 
@@ -47,8 +47,8 @@ export class UpdateProductDto {
     example: 400,
     required: false,
   })
-  @IsNumber({}, { message: 'Skidka narxi raqam bo‘lishi kerak' })
-  @Min(0, { message: 'Skidka narxi 0 dan kichik bo‘lmasligi kerak' })
+  @IsNumber()
+  @Min(0)
   @ValidateIf((o) => o.isDiscounted === true, {
     message: 'Skidka bo‘lganda skidka narxi kiritilishi kerak',
   })
@@ -60,7 +60,7 @@ export class UpdateProductDto {
     example: '60d5f484f1b2c123456789ab',
     required: false,
   })
-  @IsString({ message: 'Kategoriya ID string bo‘lishi kerak' })
+  @IsString()
   @IsOptional()
   category?: string;
 
@@ -69,7 +69,7 @@ export class UpdateProductDto {
     example: 'uploads/images/product-123.jpg',
     required: false,
   })
-  @IsString({ message: 'Rasm yo‘li string bo‘lishi kerak' })
+  @IsString()
   @IsOptional()
   imagePath?: string;
 }
