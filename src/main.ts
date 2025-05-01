@@ -10,6 +10,11 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.setGlobalPrefix('api');
+  app.enableCors({
+    origin: 'http://localhost:3005',
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -40,13 +45,6 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document, {
     swaggerOptions: {
       persistAuthorization: true, // Tokenni saqlab qolish uchun
-
-      ignoreGlobalPrefix: false,
-      deepScanRoutes: true,
-      tryItOutEnabled: true,
-      displayRequestDuration: true,
-      defaultModelsExpandDepth: 0,
-      defaultModelExpandDepth: 0,
     },
   });
 
